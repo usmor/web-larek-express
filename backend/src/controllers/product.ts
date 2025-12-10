@@ -48,6 +48,9 @@ export const createProduct = async (
   const permPath = path.join(UPLOAD_PATH, path.basename(image.fileName));
 
   try {
+    if (!fs.existsSync(tempPath)) {
+      return next(new NotFoundError('Файл не найден во временной папке'));
+    }
     await fs.promises.rename(tempPath, permPath);
   } catch (error) {
     return next(error);

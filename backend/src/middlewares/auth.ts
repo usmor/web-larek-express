@@ -1,37 +1,37 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import UnauthorizedError from '../errors/unauthorized-error';
 
 export interface SessionRequest extends Request {
     userId?: string | JwtPayload;
 }
 
-const handleAuthError = (res: Response) => {
-  res
-    .status(401)
-    .send({ message: 'Необходима авторизация' });
-};
+const ACCESS_TOKEN_SECRET_KEY = process.env.ACCESS_TOKEN_SECRET_KEY || 'access_token_secret_key';
 
-const extractBearerToken = (header: string) => header.replace('Bearer ', '');
-
-export default (req: SessionRequest, res: Response, next: NextFunction) => {
+const auth = async (
+  req: SessionRequest,
+  _res: Response,
+  next: NextFunction,
+) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return handleAuthError(res);
+    return next(new UnauthorizedError('Необходима авторизация'));
   }
 
-  const token = extractBearerToken(authorization);
+  const accessToken = authorization.replace('Bearer ', '');
+
   let payload;
 
   try {
-    payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY || 'access_token_secret_key');
-  } catch (err) {
-    return handleAuthError(res);
+    payload = jwt.verify(accessToken, ACCESS_TOKEN_SECRET_KEY);
+  } catch (error) {
+    return next(new UnauthorizedError('Необходима авторизация'));
   }
 
-  if (typeof payload === 'object' && payload !== null && '_id' in payload) {
-    req.userId = payload._id as string;
-    return next();
-  }
+  req.userId = payload;
+
   return next();
 };
+
+export default auth;
