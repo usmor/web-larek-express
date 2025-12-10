@@ -45,15 +45,6 @@ export const createProduct = async (
       title, image, category, description, price,
     } = req.body;
 
-    if (!title || !title.trim()) {
-      return next(new BadRequestError('Поле "title" должно быть заполнено'));
-    }
-
-    const existingProduct = await Product.findOne({ title });
-    if (existingProduct) {
-      return next(new ConflictError('Товар с таким названием уже существует'));
-    }
-
     if (image?.fileName) {
       const tempPath = path.join(
         UPLOAD_PATH_TEMP,
@@ -79,12 +70,12 @@ export const createProduct = async (
       image,
       category,
       description,
-      price: price ?? null,
+      price: price || null,
     });
 
     return res.status(201).send(product);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('E11000')) {
+    if (error instanceof Error && error.message.includes('E11000') && error.message.includes('title')) {
       return next(
         new ConflictError('Товар с таким названием уже существует'),
       );

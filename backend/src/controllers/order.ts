@@ -56,10 +56,8 @@ const createOrder = async (
       );
     }
 
-    const calculatedTotal = products.reduce(
-      (sum, product) => sum + (product.price || 0),
-      0,
-    );
+     const calculatedTotal = products.reduce((acc, product) => acc + product.price!, 0);
+     
     if (calculatedTotal !== total) {
       return next(
         new BadRequestError(
