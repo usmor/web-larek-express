@@ -148,53 +148,49 @@ export const logout = async (
   res: Response,
   next: NextFunction,
 ) => {
+  const refreshToken = req.cookies.REFRESH_TOKEN;
+
+  if (!refreshToken) {
+    return next(new BadRequestError('Неверные данные'));
+  }
+
+  let payload;
   try {
-    const refreshToken = req.cookies.REFRESH_TOKEN;
+    payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
+  } catch (error) {
+    return next(new BadRequestError('Неверные данные'));
+  }
 
-    if (!refreshToken) {
-      return next(new BadRequestError('Неверные данные'));
-    }
-
-    let payload;
-    try {
-      payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
-    } catch (error) {
-      return next(new BadRequestError('Неверные данные'));
-    }
-
-    let user;
-    try {
-      user = await User.findById(payload).select('+tokens');
-    } catch (error) {
-      return next(error);
-    }
-
-    if (!user) {
-      return next(new NotFoundError('Пользователь не найден'));
-    }
-
-    user.tokens = [];
-    user = await user.save();
-
-    const expiredRefreshToken = jwt.sign(
-      { _id: user._id },
-      REFRESH_TOKEN_SECRET_KEY,
-      { expiresIn: 0 },
-    );
-
-    res.cookie('REFRESH_TOKEN', expiredRefreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: 0,
-    });
-
-    res.status(200).send({
-      success: true,
-    });
+  let user;
+  try {
+    user = await User.findById(payload).select('+tokens');
   } catch (error) {
     return next(error);
   }
+
+  if (!user) {
+    return next(new NotFoundError('Пользователь не найден'));
+  }
+
+  user.tokens = [];
+  user = await user.save();
+
+  const expiredRefreshToken = jwt.sign(
+    { _id: user._id },
+    REFRESH_TOKEN_SECRET_KEY,
+    { expiresIn: 0 },
+  );
+
+  res.cookie('REFRESH_TOKEN', expiredRefreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: 0,
+  });
+
+  res.status(200).send({
+    success: true,
+  });
 };
 
 export const refreshAccessToken = async (
@@ -202,58 +198,54 @@ export const refreshAccessToken = async (
   res: Response,
   next: NextFunction,
 ) => {
+  let refreshToken = req.cookies.REFRESH_TOKEN;
+
+  if (!refreshToken) {
+    return next(new BadRequestError('Неверные данные'));
+  }
+
+  let payload;
   try {
-    let refreshToken = req.cookies.REFRESH_TOKEN;
+    payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
+  } catch (error) {
+    return next(new UnauthorizedError('Необходима авторизация'));
+  }
 
-    if (!refreshToken) {
-      return next(new BadRequestError('Неверные данные'));
-    }
-
-    let payload;
-    try {
-      payload = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
-    } catch (error) {
-      return next(new UnauthorizedError('Необходима авторизация'));
-    }
-
-    let user;
-    try {
-      user = await User.findById(payload).select('+tokens');
-    } catch (error) {
-      return next(error);
-    }
-
-    if (!user) {
-      return next(new NotFoundError('Пользователь не найден'));
-    }
-
-    const accessToken = jwt.sign({ _id: user._id }, ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: AUTH_ACCESS_TOKEN_EXPIRY as jwt.SignOptions['expiresIn'],
-    });
-
-    refreshToken = jwt.sign({ _id: user._id }, REFRESH_TOKEN_SECRET_KEY, {
-      expiresIn: AUTH_REFRESH_TOKEN_EXPIRY as jwt.SignOptions['expiresIn'],
-    });
-
-    user.tokens.push({ token: refreshToken });
-    user = await user.save();
-
-    res.cookie('REFRESH_TOKEN', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      maxAge: convertToMs(AUTH_REFRESH_TOKEN_EXPIRY),
-    });
-
-    res.status(200).send({
-      user: {
-        email: user.email,
-        name: user.name,
-      },
-      success: true,
-      accessToken,
-    });
+  let user;
+  try {
+    user = await User.findById(payload).select('+tokens');
   } catch (error) {
     return next(error);
   }
+
+  if (!user) {
+    return next(new NotFoundError('Пользователь не найден'));
+  }
+
+  const accessToken = jwt.sign({ _id: user._id }, ACCESS_TOKEN_SECRET_KEY, {
+    expiresIn: AUTH_ACCESS_TOKEN_EXPIRY as jwt.SignOptions['expiresIn'],
+  });
+
+  refreshToken = jwt.sign({ _id: user._id }, REFRESH_TOKEN_SECRET_KEY, {
+    expiresIn: AUTH_REFRESH_TOKEN_EXPIRY as jwt.SignOptions['expiresIn'],
+  });
+
+  user.tokens.push({ token: refreshToken });
+  user = await user.save();
+
+  res.cookie('REFRESH_TOKEN', refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    maxAge: convertToMs(AUTH_REFRESH_TOKEN_EXPIRY),
+  });
+
+  res.status(200).send({
+    user: {
+      email: user.email,
+      name: user.name,
+    },
+    success: true,
+    accessToken,
+  });
 };

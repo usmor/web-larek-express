@@ -1,13 +1,11 @@
 import multer, { FileFilterCallback } from 'multer';
 import { faker } from '@faker-js/faker';
-import { Express } from 'express';
-// import { Request as ExpressRequest } from 'express';
 import path from 'path';
 import fs from 'fs';
+import { Request } from 'express';
 import BadRequestError from '../errors/bad-request-error';
 
 const ROOT_DIR = process.cwd();
-
 const UPLOAD_PATH_TEMP = path.join(ROOT_DIR, 'src', 'temp');
 
 if (!fs.existsSync(UPLOAD_PATH_TEMP)) {
@@ -31,7 +29,7 @@ const allowedTypes = [
   'image/jpeg',
 ];
 
-const fileFilter = (_req: Express.Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
   if (!allowedTypes.includes(file.mimetype)) {
     cb(new BadRequestError('Разрешены только изображения png, jpg, jpeg'));
   } else {

@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import {
   model, Model, Schema, HydratedDocument,
 } from 'mongoose';
-import BadRequestError from '../errors/bad-request-error';
+import UnauthorizedError from '../errors/unauthorized-error';
 
 interface IToken {
   token: string;
@@ -72,11 +72,11 @@ userSchema.static(
         .select('+tokens');
       const match = await bcrypt.compare(password, user!.password);
       if (!match) {
-        return Promise.reject(new BadRequestError('Неверная почта или пароль'));
+        return Promise.reject(new UnauthorizedError('Неверная почта или пароль'));
       }
       return Promise.resolve(user);
     } catch (error) {
-      return Promise.reject(new BadRequestError('Неверная почта или пароль'));
+      return Promise.reject(new UnauthorizedError('Неверная почта или пароль'));
     }
   },
 );

@@ -1,6 +1,4 @@
 import { Schema, model } from 'mongoose';
-import path from 'path';
-import fs from 'fs';
 
 export interface IImage {
   fileName: string;
@@ -45,15 +43,6 @@ export const productSchema = new Schema<IProduct>({
     type: Number,
     default: null,
   },
-});
-
-productSchema.post('findOneAndDelete', (doc) => {
-  if (doc?.image?.fileName) {
-    const filePath = path.join(process.cwd(), doc.image.fileName);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  }
 });
 
 export default model<IProduct>('product', productSchema);

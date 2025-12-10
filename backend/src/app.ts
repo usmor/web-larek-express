@@ -2,7 +2,6 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
-import { isCelebrateError } from 'celebrate';
 import cookieParser from 'cookie-parser';
 import ProductRoutes from './routes/product';
 import UserRoutes from './routes/auth';
@@ -35,37 +34,16 @@ mongoose
 app.use(requestLogger);
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/product', ProductRoutes);
-app.use('/order', OrderRoutes);
 app.use('/auth', UserRoutes);
+app.use('/product', ProductRoutes);
 app.use('/upload', UploadRoutes);
+app.use('/order', OrderRoutes);
 
 app.use('*', (_req: Request, _res: Response, next: NextFunction) => {
   next(new NotFoundError('Маршрут не найден'));
 });
 
 app.use(errorLogger);
-
-app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-  if (isCelebrateError(err)) {
-    const celebrateError = err as any;
-    let message = 'Ошибка валидации данных';
-
-    const errorDetails = celebrateError.details.get('body')
-      || celebrateError.details.get('params')
-      || celebrateError.details.get('query');
-
-    if (errorDetails && errorDetails.details.length > 0) {
-      const firstError = errorDetails.details[0];
-      if (firstError.message) {
-        message = firstError.message;
-      }
-    }
-
-    return res.status(400).json({ message });
-  }
-  return next(err);
-});
 app.use(errorHandler);
 
 app.listen(PORT, () => {
