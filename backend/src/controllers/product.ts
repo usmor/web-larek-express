@@ -45,13 +45,13 @@ export const createProduct = async (
       title, image, category, description, price,
     } = req.body;
 
+    if (!title || !title.trim()) {
+      return next(new BadRequestError('Поле "title" должно быть заполнено'));
+    }
+
     const existingProduct = await Product.findOne({ title });
     if (existingProduct) {
       return next(new ConflictError('Товар с таким названием уже существует'));
-    }
-
-    if (!title || !title.trim()) {
-      return next(new BadRequestError('Поле "title" должно быть заполнено'));
     }
 
     if (image?.fileName) {
@@ -92,7 +92,7 @@ export const createProduct = async (
     if (error instanceof Error.ValidationError) {
       return next(new BadRequestError(error.message));
     }
-    return next(error);
+    return next(new InternalServerError('Ошибка при создании товара'));
   }
 };
 
