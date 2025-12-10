@@ -50,6 +50,10 @@ export const createProduct = async (
       return next(new ConflictError('Товар с таким названием уже существует'));
     }
 
+    if (!title || !title.trim()) {
+      return next(new BadRequestError('Поле "title" должно быть заполнено'));
+    }
+
     if (image?.fileName) {
       const tempPath = path.join(
         UPLOAD_PATH_TEMP,
@@ -64,8 +68,8 @@ export const createProduct = async (
       if (fs.existsSync(tempPath)) {
         try {
           await fs.promises.rename(tempPath, permPath);
-        } catch (e) {
-          console.error('FILE MOVE ERROR:', e);
+        } catch (error) {
+          return next(new InternalServerError());
         }
       }
     }

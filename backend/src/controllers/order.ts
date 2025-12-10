@@ -18,7 +18,6 @@ const createOrder = async (
       || !email
       || !phone
       || !address
-      || !total
       || total === undefined
       || !items
     ) {
@@ -73,7 +72,7 @@ const createOrder = async (
 
     return res.status(200).send({
       id: orderId,
-      total: calculatedTotal,
+      total,
     });
   } catch (error) {
     return next(error);
