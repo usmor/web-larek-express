@@ -18,17 +18,24 @@ const errorHandler = (
 
   if (error instanceof CelebrateError) {
     statusCode = 400;
-    message = error.details.get('body')?.details[0].message || 'Ошибка валидации данных';
-  } else if (
-    error instanceof BadRequestError
-    || error instanceof ConflictError
-    || error instanceof NotFoundError
-    || error instanceof UnauthorizedError
-    || error instanceof InternalServerError
-  ) {
-    statusCode = error.statusCode;
+    message = error.details.get('body')?.details[0].message || 'Некорректные данные';
+  } else if (error instanceof BadRequestError) {
+    statusCode = 400;
+    message = error.message;
+  } else if (error instanceof NotFoundError) {
+    statusCode = 404;
+    message = error.message;
+  } else if (error instanceof ConflictError) {
+    statusCode = 409;
+    message = error.message;
+  } else if (error instanceof UnauthorizedError) {
+    statusCode = 401;
+    message = error.message;
+  } else if (error instanceof InternalServerError) {
+    statusCode = 500;
     message = error.message;
   }
+
   return res.status(statusCode).send({ message });
 };
 
