@@ -6,18 +6,7 @@ import Product from '../models/product';
 import ConflictError from '../errors/conflict-error';
 import BadRequestError from '../errors/bad-request-error';
 import NotFoundError from '../errors/not-found-error';
-
-const ROOT_DIR = process.cwd();
-const UPLOAD_PATH = path.join(ROOT_DIR, 'src', 'public', 'images');
-const UPLOAD_PATH_TEMP = path.join(ROOT_DIR, 'src', 'temp');
-
-if (!fs.existsSync(UPLOAD_PATH_TEMP)) {
-  fs.mkdirSync(UPLOAD_PATH_TEMP, { recursive: true });
-}
-
-if (!fs.existsSync(UPLOAD_PATH)) {
-  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
-}
+import { UPLOAD_PATH, UPLOAD_PATH_TEMP } from '../config';
 
 export const getProducts = async (
   _req: Request,

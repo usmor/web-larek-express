@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import UnauthorizedError from '../errors/unauthorized-error';
+import { ACCESS_TOKEN_SECRET_KEY } from '../config';
 
 export interface SessionRequest extends Request {
     userId?: string | JwtPayload;
 }
-
-const ACCESS_TOKEN_SECRET_KEY = process.env.ACCESS_TOKEN_SECRET_KEY || 'access_token_secret_key';
 
 const auth = async (
   req: SessionRequest,

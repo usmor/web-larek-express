@@ -9,11 +9,12 @@ import NotFoundError from '../errors/not-found-error';
 import ConflictError from '../errors/conflict-error';
 import convertToMs from '../utils/convert-to-ms';
 import UnauthorizedError from '../errors/unauthorized-error';
-
-const ACCESS_TOKEN_SECRET_KEY = process.env.ACCESS_TOKEN_SECRET_KEY || 'access_token_secret_key';
-const REFRESH_TOKEN_SECRET_KEY = process.env.REFRESH_TOKEN_SECRET_KEY || 'refresh_token_secret_key';
-const AUTH_ACCESS_TOKEN_EXPIRY = process.env.AUTH_ACCESS_TOKEN_EXPIRY || '15m';
-const AUTH_REFRESH_TOKEN_EXPIRY = process.env.AUTH_REFRESH_TOKEN_EXPIRY || '7d';
+import {
+  ACCESS_TOKEN_SECRET_KEY,
+  AUTH_ACCESS_TOKEN_EXPIRY,
+  AUTH_REFRESH_TOKEN_EXPIRY,
+  REFRESH_TOKEN_SECRET_KEY,
+} from '../config';
 
 export const getCurrentUser = async (
   req: SessionRequest,

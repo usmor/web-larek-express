@@ -4,12 +4,12 @@ import Product from '../models/product';
 import BadRequestError from '../errors/bad-request-error';
 
 const createOrder = async (req: Request, res: Response, next: NextFunction) => {
-  const { orderData } = req.body;
+  const { items, total } = req.body;
 
   try {
-    const products = await Product.find({ _id: { $in: orderData.items } });
+    const products = await Product.find({ _id: { $in: items } });
 
-    if (products.length !== orderData.items.length) {
+    if (products.length !== items.length) {
       return next(
         new BadRequestError('Один или несколько товаров не существуют'),
       );
@@ -26,7 +26,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
       0,
     );
 
-    if (calculatedTotal !== orderData.total) {
+    if (calculatedTotal !== total) {
       return next(
         new BadRequestError(
           `Неверная сумма заказа. Ожидается ${calculatedTotal}`,
@@ -41,7 +41,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
 
   return res.status(200).send({
     id: orderId,
-    total: orderData.total,
+    total,
   });
 };
 

@@ -1,16 +1,9 @@
 import multer, { FileFilterCallback } from 'multer';
 import { faker } from '@faker-js/faker';
 import path from 'path';
-import fs from 'fs';
 import { Request } from 'express';
 import BadRequestError from '../errors/bad-request-error';
-
-const ROOT_DIR = process.cwd();
-const UPLOAD_PATH_TEMP = path.join(ROOT_DIR, 'src', 'temp');
-
-if (!fs.existsSync(UPLOAD_PATH_TEMP)) {
-  fs.mkdirSync(UPLOAD_PATH_TEMP, { recursive: true });
-}
+import { UPLOAD_PATH_TEMP } from '../config';
 
 const storage = multer.diskStorage({
   destination(_req, _file, cb) {

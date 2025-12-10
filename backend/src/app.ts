@@ -10,14 +10,12 @@ import UploadRoutes from './routes/upload';
 import errorHandler from './middlewares/error-handler';
 import NotFoundError from './errors/not-found-error';
 import { requestLogger, errorLogger } from './middlewares/logger';
-
-const { PORT = 3000 } = process.env;
+import { DB_ADDRESS, ORIGIN_ALLOW, PORT } from './config';
 
 const app = express();
-const allowedOrigin = process.env.ORIGIN_ALLOW || 'http://localhost:5173';
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: ORIGIN_ALLOW,
     credentials: true,
   }),
 );
@@ -27,7 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 mongoose
-  .connect('mongodb://localhost:27017/weblarek')
+  .connect(DB_ADDRESS)
   .then(() => console.log('Успешное подключение к бд'))
   .catch((err) => console.error('Ошибка при подключении к бд:', err));
 

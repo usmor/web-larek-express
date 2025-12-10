@@ -43,7 +43,7 @@ const orderBodySchema = Joi.object({
     'any.required': 'Поле "address" обязательно для заполнения',
   }),
   total: Joi.number().required().messages({
-    'string.empty': 'Поле "total" должно быть заполнено',
+    'any.required': 'Поле "total" обязательно для заполнения',
   }),
   items: Joi.array()
     .items(Joi.string().hex().length(24))
