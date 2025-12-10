@@ -71,7 +71,7 @@ const createOrder = async (
 
     const orderId = faker.string.uuid();
 
-    return res.status(201).send({
+    return res.status(200).send({
       id: orderId,
       total: calculatedTotal,
     });

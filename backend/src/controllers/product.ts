@@ -44,16 +44,19 @@ export const createProduct = async (
     title, image, category, description, price,
   } = req.body;
 
-  const tempPath = path.join(UPLOAD_PATH_TEMP, path.basename(image.fileName));
-  const permPath = path.join(UPLOAD_PATH, path.basename(image.fileName));
+  const existingProduct = await Product.findOne({ title });
+  if (existingProduct) {
+    return next(new ConflictError('Товар с таким названием уже существует'));
+  }
 
-  try {
-    if (!fs.existsSync(tempPath)) {
-      return next(new NotFoundError('Файл не найден во временной папке'));
+  if (image?.fileName) {
+    const tempPath = path.join(UPLOAD_PATH_TEMP, path.basename(image.fileName));
+
+    const permPath = path.join(UPLOAD_PATH, path.basename(image.fileName));
+
+    if (fs.existsSync(tempPath)) {
+      await fs.promises.rename(tempPath, permPath);
     }
-    await fs.promises.rename(tempPath, permPath);
-  } catch (error) {
-    return next(error);
   }
 
   return await Product.create({
@@ -61,7 +64,7 @@ export const createProduct = async (
     image,
     category,
     description,
-    price: price || null,
+    price: price ?? null,
   })
     .then((product) => res.status(201).send(product))
     .catch((error: Error) => {
@@ -102,35 +105,31 @@ export const updateProduct = async (
       return next(new NotFoundError('Товар не найден'));
     }
 
-    if (product.image) {
+    if (product.image?.fileName) {
       const tempPath = path.join(
         UPLOAD_PATH_TEMP,
         path.basename(product.image.fileName),
       );
+
       const permPath = path.join(
         UPLOAD_PATH,
         path.basename(product.image.fileName),
       );
 
-      if (!fs.existsSync(tempPath)) {
-        return next(new NotFoundError('Файл не найден во временной папке'));
-      }
+      let fileMoved = false;
 
-      try {
+      if (fs.existsSync(tempPath)) {
         await fs.promises.rename(tempPath, permPath);
-      } catch (error) {
-        return next(error);
+        fileMoved = true;
       }
 
-      if (currentProduct.image?.fileName) {
+      if (fileMoved && currentProduct.image?.fileName) {
         const oldFilePath = path.join(
           UPLOAD_PATH,
           path.basename(currentProduct.image.fileName),
         );
 
-        fs.promises.unlink(oldFilePath).catch(() => next(
-          new NotFoundError('Старая картинка не найдена или уже удалена'),
-        ));
+        fs.promises.unlink(oldFilePath).catch(() => {});
       }
     }
 
