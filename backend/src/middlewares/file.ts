@@ -29,7 +29,7 @@ const allowedTypes = [
   'image/jpeg',
 ];
 
-const fileFilter = (_req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+const fileFilter = (_req: Request, file: any, cb: FileFilterCallback) => {
   if (!allowedTypes.includes(file.mimetype)) {
     cb(new BadRequestError('Разрешены только изображения png, jpg, jpeg'));
   } else {

@@ -29,7 +29,7 @@ const errorHandler = (
     statusCode = error.statusCode;
     message = error.message;
   }
-  return res.status(statusCode).json({ message });
+  return res.status(statusCode).send({ message });
 };
 
 export default errorHandler;
