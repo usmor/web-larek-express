@@ -20,6 +20,8 @@
   },
   "rules": {
     "no-shadow": "off",
+    "no-return-await": "off",
+    "consistent-return": "off",
     "@typescript-eslint/no-shadow": "warn",
     "import/extensions": [
       "error",
