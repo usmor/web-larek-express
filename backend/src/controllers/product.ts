@@ -40,44 +40,56 @@ export const createProduct = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const {
-    title, image, category, description, price,
-  } = req.body;
+  try {
+    const {
+      title, image, category, description, price,
+    } = req.body;
 
-  const existingProduct = await Product.findOne({ title });
-  if (existingProduct) {
-    return next(new ConflictError('Товар с таким названием уже существует'));
-  }
-
-  if (image?.fileName) {
-    const tempPath = path.join(UPLOAD_PATH_TEMP, path.basename(image.fileName));
-
-    const permPath = path.join(UPLOAD_PATH, path.basename(image.fileName));
-
-    if (fs.existsSync(tempPath)) {
-      await fs.promises.rename(tempPath, permPath);
+    const existingProduct = await Product.findOne({ title });
+    if (existingProduct) {
+      return next(new ConflictError('Товар с таким названием уже существует'));
     }
-  }
 
-  return await Product.create({
-    title,
-    image,
-    category,
-    description,
-    price: price ?? null,
-  })
-    .then((product) => res.status(201).send(product))
-    .catch((error: Error) => {
-      if (error instanceof Error && error.message.includes('E11000')) {
-        return next(
-          new ConflictError('Товар с таким названием уже существует'),
-        );
+    if (image?.fileName) {
+      const tempPath = path.join(
+        UPLOAD_PATH_TEMP,
+        path.basename(image.fileName),
+      );
+
+      const permPath = path.join(
+        UPLOAD_PATH,
+        path.basename(image.fileName),
+      );
+
+      if (fs.existsSync(tempPath)) {
+        try {
+          await fs.promises.rename(tempPath, permPath);
+        } catch (e) {
+          console.error('FILE MOVE ERROR:', e);
+        }
       }
-      if (error instanceof Error.ValidationError) {
-        return next(new BadRequestError(error.message));
-      }
-      return next(error);
+    }
+
+    const product = await Product.create({
+      title,
+      image,
+      category,
+      description,
+      price: price ?? null,
     });
+
+    return res.status(201).send(product);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('E11000')) {
+      return next(
+        new ConflictError('Товар с таким названием уже существует'),
+      );
+    }
+    if (error instanceof Error.ValidationError) {
+      return next(new BadRequestError(error.message));
+    }
+    return next(error);
+  }
 };
 
 export const uploadFile = (req: Request, res: Response, next: NextFunction) => {
