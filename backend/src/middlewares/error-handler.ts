@@ -7,6 +7,10 @@ const errorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
+  if (error instanceof SyntaxError && 'body' in error) {
+    return res.status(400).send({ message: error.message });
+  }
+
   if (error instanceof CelebrateError) {
     const message = error.details.get('body')?.details[0].message
       || 'Некорректные данные';
