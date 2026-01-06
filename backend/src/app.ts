@@ -3,6 +3,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import { errors } from 'celebrate';
 import ProductRoutes from './routes/product';
 import UserRoutes from './routes/auth';
 import OrderRoutes from './routes/order';
@@ -41,6 +42,7 @@ app.use('*', (_req: Request, _res: Response, next: NextFunction) => {
   next(new NotFoundError('Маршрут не найден'));
 });
 
+app.use(errors());
 app.use(errorLogger);
 app.use(errorHandler);
 
